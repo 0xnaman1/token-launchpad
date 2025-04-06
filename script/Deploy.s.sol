@@ -33,9 +33,7 @@ contract DeployFactory is Script {
         console.log("Factory deployed at", address(fac));
 
         // Deploy Launch
-        Launch launch = Launch(
-            fac.createLaunch(1_000_000 * 1e6, "Bancor Token", "BT")
-        );
+        Launch launch = Launch(fac.createLaunch(1_000_000 * 1e6, "Bancor Token", "BT"));
 
         console.log("Launch deployed at", address(launch));
 

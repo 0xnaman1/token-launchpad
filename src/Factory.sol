@@ -21,18 +21,9 @@ contract Factory is OwnableUpgradeable, UUPSUpgradeable {
         launchImplementation = address(new Launch());
     }
 
-    function createLaunch(
-        uint256 _targetAmount,
-        string memory _name,
-        string memory _symbol
-    ) public returns (address) {
+    function createLaunch(uint256 _targetAmount, string memory _name, string memory _symbol) public returns (address) {
         address newLaunch = Clones.clone(launchImplementation);
-        Launch(newLaunch).initialize(
-            usdcAddress,
-            _targetAmount,
-            _name,
-            _symbol
-        );
+        Launch(newLaunch).initialize(usdcAddress, _targetAmount, _name, _symbol);
         return newLaunch;
     }
 

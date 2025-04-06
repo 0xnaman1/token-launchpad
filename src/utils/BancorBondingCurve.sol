@@ -11,6 +11,7 @@ import "./Power.sol"; // Efficient power function.
  */
 contract BancorBondingCurve is Power {
     using SafeMath for uint256;
+
     uint32 private constant MAX_RESERVE_RATIO = 1000000;
 
     /**
@@ -34,12 +35,7 @@ contract BancorBondingCurve is Power {
         uint256 _depositAmount
     ) public view returns (uint256) {
         // validate input
-        require(
-            _supply > 0 &&
-                _reserveBalance > 0 &&
-                _reserveRatio > 0 &&
-                _reserveRatio <= MAX_RESERVE_RATIO
-        );
+        require(_supply > 0 && _reserveBalance > 0 && _reserveRatio > 0 && _reserveRatio <= MAX_RESERVE_RATIO);
         // special case for 0 deposit amount
         if (_depositAmount == 0) {
             return 0;
@@ -51,12 +47,7 @@ contract BancorBondingCurve is Power {
         uint256 result;
         uint8 precision;
         uint256 baseN = _depositAmount.add(_reserveBalance);
-        (result, precision) = power(
-            baseN,
-            _reserveBalance,
-            _reserveRatio,
-            MAX_RESERVE_RATIO
-        );
+        (result, precision) = power(baseN, _reserveBalance, _reserveRatio, MAX_RESERVE_RATIO);
         uint256 newTokenSupply = _supply.mul(result) >> precision;
         return newTokenSupply - _supply;
     }
@@ -75,19 +66,15 @@ contract BancorBondingCurve is Power {
      *
      * @return sale return amount
      */
-    function calculateSaleReturn(
-        uint256 _supply,
-        uint256 _reserveBalance,
-        uint32 _reserveRatio,
-        uint256 _sellAmount
-    ) public view returns (uint256) {
+    function calculateSaleReturn(uint256 _supply, uint256 _reserveBalance, uint32 _reserveRatio, uint256 _sellAmount)
+        public
+        view
+        returns (uint256)
+    {
         // validate input
         require(
-            _supply > 0 &&
-                _reserveBalance > 0 &&
-                _reserveRatio > 0 &&
-                _reserveRatio <= MAX_RESERVE_RATIO &&
-                _sellAmount <= _supply
+            _supply > 0 && _reserveBalance > 0 && _reserveRatio > 0 && _reserveRatio <= MAX_RESERVE_RATIO
+                && _sellAmount <= _supply
         );
         // special case for 0 sell amount
         if (_sellAmount == 0) {
@@ -104,12 +91,7 @@ contract BancorBondingCurve is Power {
         uint256 result;
         uint8 precision;
         uint256 baseD = _supply - _sellAmount;
-        (result, precision) = power(
-            _supply,
-            baseD,
-            MAX_RESERVE_RATIO,
-            _reserveRatio
-        );
+        (result, precision) = power(_supply, baseD, MAX_RESERVE_RATIO, _reserveRatio);
         uint256 oldBalance = _reserveBalance.mul(result);
         uint256 newBalance = _reserveBalance << precision;
         return oldBalance.sub(newBalance).div(result);

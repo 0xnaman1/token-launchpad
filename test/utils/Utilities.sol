@@ -23,9 +23,7 @@ contract Utilities is Test {
     }
 
     //create users with 100 ether balance
-    function createUsers(
-        uint256 userNum
-    ) external returns (address payable[] memory, bytes32[] memory) {
+    function createUsers(uint256 userNum) external returns (address payable[] memory, bytes32[] memory) {
         address payable[] memory users = new address payable[](userNum);
         bytes32[] memory privateKeys = new bytes32[](userNum);
 

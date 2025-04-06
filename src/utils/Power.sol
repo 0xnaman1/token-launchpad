@@ -21,32 +21,29 @@ contract Power {
     uint8 private constant MAX_PRECISION = 127;
 
     /**
-    The values below depend on MAX_PRECISION. If you choose to change it:
-    Apply the same change in file 'PrintIntScalingFactors.py', run it and paste the results below.
-  */
+     * The values below depend on MAX_PRECISION. If you choose to change it:
+     * Apply the same change in file 'PrintIntScalingFactors.py', run it and paste the results below.
+     */
     uint256 private constant FIXED_1 = 0x080000000000000000000000000000000;
     uint256 private constant FIXED_2 = 0x100000000000000000000000000000000;
     uint256 private constant MAX_NUM = 0x200000000000000000000000000000000;
 
     /**
-      Auto-generated via 'PrintLn2ScalingFactors.py'
-  */
+     * Auto-generated via 'PrintLn2ScalingFactors.py'
+     */
     uint256 private constant LN2_NUMERATOR = 0x3f80fe03f80fe03f80fe03f80fe03f8;
-    uint256 private constant LN2_DENOMINATOR =
-        0x5b9de1d10bf4103d647b0955897ba80;
+    uint256 private constant LN2_DENOMINATOR = 0x5b9de1d10bf4103d647b0955897ba80;
 
     /**
-      Auto-generated via 'PrintFunctionOptimalLog.py' and 'PrintFunctionOptimalExp.py'
-  */
-    uint256 private constant OPT_LOG_MAX_VAL =
-        0x15bf0a8b1457695355fb8ac404e7a79e3;
-    uint256 private constant OPT_EXP_MAX_VAL =
-        0x800000000000000000000000000000000;
+     * Auto-generated via 'PrintFunctionOptimalLog.py' and 'PrintFunctionOptimalExp.py'
+     */
+    uint256 private constant OPT_LOG_MAX_VAL = 0x15bf0a8b1457695355fb8ac404e7a79e3;
+    uint256 private constant OPT_EXP_MAX_VAL = 0x800000000000000000000000000000000;
 
     /**
-    The values below depend on MIN_PRECISION and MAX_PRECISION. If you choose to change either one of them:
-    Apply the same change in file 'PrintFunctionBancorFormula.py', run it and paste the results below.
-  */
+     * The values below depend on MIN_PRECISION and MAX_PRECISION. If you choose to change either one of them:
+     * Apply the same change in file 'PrintFunctionBancorFormula.py', run it and paste the results below.
+     */
     uint256[128] private maxExpArray;
 
     constructor() {
@@ -181,27 +178,22 @@ contract Power {
     }
 
     /**
-    General Description:
-        Determine a value of precision.
-        Calculate an integer approximation of (_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision.
-        Return the result along with the precision used.
-     Detailed Description:
-        Instead of calculating "base ^ exp", we calculate "e ^ (log(base) * exp)".
-        The value of "log(base)" is represented with an integer slightly smaller than "log(base) * 2 ^ precision".
-        The larger "precision" is, the more accurately this value represents the real value.
-        However, the larger "precision" is, the more bits are required in order to store this value.
-        And the exponentiation function, which takes "x" and calculates "e ^ x", is limited to a maximum exponent (maximum value of "x").
-        This maximum exponent depends on the "precision" used, and it is given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
-        Hence we need to determine the highest precision which can be used for the given input, before calling the exponentiation function.
-        This allows us to compute "base ^ exp" with maximum accuracy and without exceeding 256 bits in any of the intermediate computations.
-        This functions assumes that "_expN < 2 ^ 256 / log(MAX_NUM - 1)", otherwise the multiplication should be replaced with a "safeMul".
-  */
-    function power(
-        uint256 _baseN,
-        uint256 _baseD,
-        uint32 _expN,
-        uint32 _expD
-    ) internal view returns (uint256, uint8) {
+     * General Description:
+     *     Determine a value of precision.
+     *     Calculate an integer approximation of (_baseN / _baseD) ^ (_expN / _expD) * 2 ^ precision.
+     *     Return the result along with the precision used.
+     *  Detailed Description:
+     *     Instead of calculating "base ^ exp", we calculate "e ^ (log(base) * exp)".
+     *     The value of "log(base)" is represented with an integer slightly smaller than "log(base) * 2 ^ precision".
+     *     The larger "precision" is, the more accurately this value represents the real value.
+     *     However, the larger "precision" is, the more bits are required in order to store this value.
+     *     And the exponentiation function, which takes "x" and calculates "e ^ x", is limited to a maximum exponent (maximum value of "x").
+     *     This maximum exponent depends on the "precision" used, and it is given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
+     *     Hence we need to determine the highest precision which can be used for the given input, before calling the exponentiation function.
+     *     This allows us to compute "base ^ exp" with maximum accuracy and without exceeding 256 bits in any of the intermediate computations.
+     *     This functions assumes that "_expN < 2 ^ 256 / log(MAX_NUM - 1)", otherwise the multiplication should be replaced with a "safeMul".
+     */
+    function power(uint256 _baseN, uint256 _baseD, uint32 _expN, uint32 _expD) internal view returns (uint256, uint8) {
         require(_baseN < MAX_NUM, "baseN exceeds max value.");
         require(_baseN >= _baseD, "Bases < 1 are not supported.");
 
@@ -218,20 +210,14 @@ contract Power {
             return (optimalExp(baseLogTimesExp), MAX_PRECISION);
         } else {
             uint8 precision = findPositionInMaxExpArray(baseLogTimesExp);
-            return (
-                generalExp(
-                    baseLogTimesExp >> (MAX_PRECISION - precision),
-                    precision
-                ),
-                precision
-            );
+            return (generalExp(baseLogTimesExp >> (MAX_PRECISION - precision), precision), precision);
         }
     }
 
     /**
-      Compute log(x / FIXED_1) * FIXED_1.
-      This functions assumes that "x >= FIXED_1", because the output would be negative otherwise.
-  */
+     * Compute log(x / FIXED_1) * FIXED_1.
+     *   This functions assumes that "x >= FIXED_1", because the output would be negative otherwise.
+     */
     function generalLog(uint256 _x) internal pure returns (uint256) {
         uint256 res = 0;
         uint256 x = _x;
@@ -258,8 +244,8 @@ contract Power {
     }
 
     /**
-    Compute the largest integer smaller than or equal to the binary logarithm of the input.
-  */
+     * Compute the largest integer smaller than or equal to the binary logarithm of the input.
+     */
     function floorLog2(uint256 _n) internal pure returns (uint8) {
         uint8 res = 0;
         uint256 n = _n;
@@ -284,13 +270,11 @@ contract Power {
     }
 
     /**
-      The global "maxExpArray" is sorted in descending order, and therefore the following statements are equivalent:
-      - This function finds the position of [the smallest value in "maxExpArray" larger than or equal to "x"]
-      - This function finds the highest position of [a value in "maxExpArray" larger than or equal to "x"]
-  */
-    function findPositionInMaxExpArray(
-        uint256 _x
-    ) internal view returns (uint8) {
+     * The global "maxExpArray" is sorted in descending order, and therefore the following statements are equivalent:
+     *   - This function finds the position of [the smallest value in "maxExpArray" larger than or equal to "x"]
+     *   - This function finds the highest position of [a value in "maxExpArray" larger than or equal to "x"]
+     */
+    function findPositionInMaxExpArray(uint256 _x) internal view returns (uint8) {
         uint8 lo = MIN_PRECISION;
         uint8 hi = MAX_PRECISION;
 
@@ -309,16 +293,13 @@ contract Power {
 
     /* solium-disable */
     /**
-       This function can be auto-generated by the script 'PrintFunctionGeneralExp.py'.
-       It approximates "e ^ x" via maclaurin summation: "(x^0)/0! + (x^1)/1! + ... + (x^n)/n!".
-       It returns "e ^ (x / 2 ^ precision) * 2 ^ precision", that is, the result is upshifted for accuracy.
-       The global "maxExpArray" maps each "precision" to "((maximumExponent + 1) << (MAX_PRECISION - precision)) - 1".
-       The maximum permitted value for "x" is therefore given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
-   */
-    function generalExp(
-        uint256 _x,
-        uint8 _precision
-    ) internal pure returns (uint256) {
+     * This function can be auto-generated by the script 'PrintFunctionGeneralExp.py'.
+     *    It approximates "e ^ x" via maclaurin summation: "(x^0)/0! + (x^1)/1! + ... + (x^n)/n!".
+     *    It returns "e ^ (x / 2 ^ precision) * 2 ^ precision", that is, the result is upshifted for accuracy.
+     *    The global "maxExpArray" maps each "precision" to "((maximumExponent + 1) << (MAX_PRECISION - precision)) - 1".
+     *    The maximum permitted value for "x" is therefore given by "maxExpArray[precision] >> (MAX_PRECISION - precision)".
+     */
+    function generalExp(uint256 _x, uint8 _precision) internal pure returns (uint256) {
         uint256 xi = _x;
         uint256 res = 0;
 
@@ -387,15 +368,14 @@ contract Power {
         xi = (xi * _x) >> _precision;
         res += xi * 0x0000000000000000000000000000001; // add x^33 * (33! / 33!)
 
-        return
-            res / 0x688589cc0e9505e2f2fee5580000000 + _x + (ONE << _precision); // divide by 33! and then add x^1 / 1! + x^0 / 0!
+        return res / 0x688589cc0e9505e2f2fee5580000000 + _x + (ONE << _precision); // divide by 33! and then add x^1 / 1! + x^0 / 0!
     }
 
     /**
-       Return log(x / FIXED_1) * FIXED_1
-       Input range: FIXED_1 <= x <= LOG_EXP_MAX_VAL - 1
-       Auto-generated via 'PrintFunctionOptimalLog.py'
-   */
+     * Return log(x / FIXED_1) * FIXED_1
+     *    Input range: FIXED_1 <= x <= LOG_EXP_MAX_VAL - 1
+     *    Auto-generated via 'PrintFunctionOptimalLog.py'
+     */
     function optimalLog(uint256 x) internal pure returns (uint256) {
         uint256 res = 0;
 
@@ -438,46 +418,30 @@ contract Power {
 
         z = y = x - FIXED_1;
         w = (y * y) / FIXED_1;
-        res +=
-            (z * (0x100000000000000000000000000000000 - y)) /
-            0x100000000000000000000000000000000;
+        res += (z * (0x100000000000000000000000000000000 - y)) / 0x100000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x0aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa - y)) /
-            0x200000000000000000000000000000000;
+        res += (z * (0x0aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa - y)) / 0x200000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x099999999999999999999999999999999 - y)) /
-            0x300000000000000000000000000000000;
+        res += (z * (0x099999999999999999999999999999999 - y)) / 0x300000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x092492492492492492492492492492492 - y)) /
-            0x400000000000000000000000000000000;
+        res += (z * (0x092492492492492492492492492492492 - y)) / 0x400000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x08e38e38e38e38e38e38e38e38e38e38e - y)) /
-            0x500000000000000000000000000000000;
+        res += (z * (0x08e38e38e38e38e38e38e38e38e38e38e - y)) / 0x500000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x08ba2e8ba2e8ba2e8ba2e8ba2e8ba2e8b - y)) /
-            0x600000000000000000000000000000000;
+        res += (z * (0x08ba2e8ba2e8ba2e8ba2e8ba2e8ba2e8b - y)) / 0x600000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x089d89d89d89d89d89d89d89d89d89d89 - y)) /
-            0x700000000000000000000000000000000;
+        res += (z * (0x089d89d89d89d89d89d89d89d89d89d89 - y)) / 0x700000000000000000000000000000000;
         z = (z * w) / FIXED_1;
-        res +=
-            (z * (0x088888888888888888888888888888888 - y)) /
-            0x800000000000000000000000000000000;
+        res += (z * (0x088888888888888888888888888888888 - y)) / 0x800000000000000000000000000000000;
 
         return res;
     }
 
     /**
-       Return e ^ (x / FIXED_1) * FIXED_1
-       Input range: 0 <= x <= OPT_EXP_MAX_VAL - 1
-       Auto-generated via 'PrintFunctionOptimalExp.py'
-   */
+     * Return e ^ (x / FIXED_1) * FIXED_1
+     *    Input range: 0 <= x <= OPT_EXP_MAX_VAL - 1
+     *    Auto-generated via 'PrintFunctionOptimalExp.py'
+     */
     function optimalExp(uint256 x) internal pure returns (uint256) {
         uint256 res = 0;
 
@@ -525,34 +489,27 @@ contract Power {
         res += z * 0x0000000000000001; // add y^20 * (20! / 20!)
         res = res / 0x21c3677c82b40000 + y + FIXED_1; // divide by 20! and then add y^1 / 1! + y^0 / 0!
 
-        if ((x & 0x010000000000000000000000000000000) != 0)
-            res =
-                (res * 0x1c3d6a24ed82218787d624d3e5eba95f9) /
-                0x18ebef9eac820ae8682b9793ac6d1e776;
-        if ((x & 0x020000000000000000000000000000000) != 0)
-            res =
-                (res * 0x18ebef9eac820ae8682b9793ac6d1e778) /
-                0x1368b2fc6f9609fe7aceb46aa619baed4;
-        if ((x & 0x040000000000000000000000000000000) != 0)
-            res =
-                (res * 0x1368b2fc6f9609fe7aceb46aa619baed5) /
-                0x0bc5ab1b16779be3575bd8f0520a9f21f;
-        if ((x & 0x080000000000000000000000000000000) != 0)
-            res =
-                (res * 0x0bc5ab1b16779be3575bd8f0520a9f21e) /
-                0x0454aaa8efe072e7f6ddbab84b40a55c9;
-        if ((x & 0x100000000000000000000000000000000) != 0)
-            res =
-                (res * 0x0454aaa8efe072e7f6ddbab84b40a55c5) /
-                0x00960aadc109e7a3bf4578099615711ea;
-        if ((x & 0x200000000000000000000000000000000) != 0)
-            res =
-                (res * 0x00960aadc109e7a3bf4578099615711d7) /
-                0x0002bf84208204f5977f9a8cf01fdce3d;
-        if ((x & 0x400000000000000000000000000000000) != 0)
-            res =
-                (res * 0x0002bf84208204f5977f9a8cf01fdc307) /
-                0x0000003c6ab775dd0b95b4cbee7e65d11;
+        if ((x & 0x010000000000000000000000000000000) != 0) {
+            res = (res * 0x1c3d6a24ed82218787d624d3e5eba95f9) / 0x18ebef9eac820ae8682b9793ac6d1e776;
+        }
+        if ((x & 0x020000000000000000000000000000000) != 0) {
+            res = (res * 0x18ebef9eac820ae8682b9793ac6d1e778) / 0x1368b2fc6f9609fe7aceb46aa619baed4;
+        }
+        if ((x & 0x040000000000000000000000000000000) != 0) {
+            res = (res * 0x1368b2fc6f9609fe7aceb46aa619baed5) / 0x0bc5ab1b16779be3575bd8f0520a9f21f;
+        }
+        if ((x & 0x080000000000000000000000000000000) != 0) {
+            res = (res * 0x0bc5ab1b16779be3575bd8f0520a9f21e) / 0x0454aaa8efe072e7f6ddbab84b40a55c9;
+        }
+        if ((x & 0x100000000000000000000000000000000) != 0) {
+            res = (res * 0x0454aaa8efe072e7f6ddbab84b40a55c5) / 0x00960aadc109e7a3bf4578099615711ea;
+        }
+        if ((x & 0x200000000000000000000000000000000) != 0) {
+            res = (res * 0x00960aadc109e7a3bf4578099615711d7) / 0x0002bf84208204f5977f9a8cf01fdce3d;
+        }
+        if ((x & 0x400000000000000000000000000000000) != 0) {
+            res = (res * 0x0002bf84208204f5977f9a8cf01fdc307) / 0x0000003c6ab775dd0b95b4cbee7e65d11;
+        }
 
         return res;
     }

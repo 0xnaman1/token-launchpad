@@ -22,12 +22,9 @@ contract LaunchTest is Test {
     mapping(address => bytes32) internal privateKeys;
 
     function setUp() public {
-        vm.createSelectFork(
-            vm.rpcUrl("https://ethereum-sepolia-rpc.publicnode.com")
-        );
+        vm.createSelectFork(vm.rpcUrl("https://ethereum-sepolia-rpc.publicnode.com"));
         utils = new Utilities();
-        (address payable[] memory _users, bytes32[] memory _privateKeys) = utils
-            .createUsers(4);
+        (address payable[] memory _users, bytes32[] memory _privateKeys) = utils.createUsers(4);
 
         users = _users;
 
@@ -51,9 +48,7 @@ contract LaunchTest is Test {
 
         // Start a token launch
         vm.startPrank(users[0]);
-        launch = Launch(
-            fac.createLaunch(1_000_000 * 1e6, "Bancor Token", "BT")
-        ); // Raising 1M USDC
+        launch = Launch(fac.createLaunch(1_000_000 * 1e6, "Bancor Token", "BT")); // Raising 1M USDC
 
         // usdc.mint(address(launch), 1000 * 10 ** 6);
         usdc.approve(address(launch), 5000 * 10 ** 6);

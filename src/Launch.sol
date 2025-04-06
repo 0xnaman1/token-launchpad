@@ -20,12 +20,9 @@ contract Launch is BancorBondingCurve {
     IUniswapV2Router02 public uniswapRouter;
     bool public fundingSuccess;
 
-    function initialize(
-        address _usdcAddress,
-        uint256 _targetAmount,
-        string memory _name,
-        string memory _symbol
-    ) public {
+    function initialize(address _usdcAddress, uint256 _targetAmount, string memory _name, string memory _symbol)
+        public
+    {
         usdc = _usdcAddress;
         targetAmount = _targetAmount;
         tokensSold = 0;
@@ -34,9 +31,7 @@ contract Launch is BancorBondingCurve {
         creator = msg.sender;
         newToken = new NewToken(_name, _symbol);
 
-        uniswapRouter = IUniswapV2Router02(
-            0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3
-        );
+        uniswapRouter = IUniswapV2Router02(0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3);
     }
 
     function setInitialPrice(uint256 _usdcAmount) external {
@@ -70,12 +65,7 @@ contract Launch is BancorBondingCurve {
 
         uint256 reserveTokenBalance = IERC20(usdc).balanceOf(address(this));
 
-        tokensToMint = calculatePurchaseReturn(
-            supply,
-            reserveTokenBalance,
-            uint32(reserveRatio),
-            _usdcAmount
-        );
+        tokensToMint = calculatePurchaseReturn(supply, reserveTokenBalance, uint32(reserveRatio), _usdcAmount);
 
         tokensSold += tokensToMint;
         fundsRaised += _usdcAmount;
@@ -100,12 +90,7 @@ contract Launch is BancorBondingCurve {
         uint256 supply = newToken.totalSupply();
         uint256 reserveTokenBalance = IERC20(usdc).balanceOf(address(this));
 
-        usdcReturnAmt = calculateSaleReturn(
-            supply,
-            reserveTokenBalance,
-            uint32(reserveRatio),
-            _sellAmount
-        );
+        usdcReturnAmt = calculateSaleReturn(supply, reserveTokenBalance, uint32(reserveRatio), _sellAmount);
 
         tokensSold -= _sellAmount;
         fundsRaised -= usdcReturnAmt;
@@ -134,14 +119,7 @@ contract Launch is BancorBondingCurve {
         IERC20(usdc).approve(address(uniswapRouter), otherHalf);
 
         uniswapRouter.addLiquidity(
-            address(newToken),
-            address(usdc),
-            250e6 * 1e18,
-            otherHalf,
-            0,
-            0,
-            address(this),
-            block.timestamp + 5 minutes
+            address(newToken), address(usdc), 250e6 * 1e18, otherHalf, 0, 0, address(this), block.timestamp + 5 minutes
         );
     }
 }
