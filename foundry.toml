@@ -2,5 +2,14 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-
+auto_detect_sol = true
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+optimizer = true
+optimizer_runs = 100
+ast = true
+
+[rpc_endpoints]
+sepolia = "${RPC}"
+
+[etherscan]
+sepolia = {key = "${ETHERSCAN_API_KEY}"}
